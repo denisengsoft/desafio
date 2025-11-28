@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 
 class Program
@@ -20,45 +21,23 @@ class Program
     {
         public Guid Id { get; set; }
         public int CodigoProduto { get; set; }
-        public int Quantidade { get; set; }
         public string Descricao { get; set; }
+        public int Quantidade { get; set; }
         public DateTime Data { get; set; }
     }
 
     static void Main()
     {
-        string json = @"
-        {
-	        ""estoque"":
-	        [
-	          {
-		        ""codigoProduto"": 101,
-		        ""descricaoProduto"": ""Caneta Azul"",
-		        ""estoque"": 150
-	          },
-	          {
-		        ""codigoProduto"": 102,
-		        ""descricaoProduto"": ""Caderno Universitário"",
-		        ""estoque"": 75
-	          },
-	          {
-		        ""codigoProduto"": 103,
-		        ""descricaoProduto"": ""Borracha Branca"",
-		        ""estoque"": 200
-	          },
-	          {
-		        ""codigoProduto"": 104,
-		        ""descricaoProduto"": ""Lápis Preto HB"",
-		        ""estoque"": 320
-	          },
-	          {
-		        ""codigoProduto"": 105,
-		        ""descricaoProduto"": ""Marcador de Texto Amarelo"",
-		        ""estoque"": 90
-	          }
-	        ]
-        }";
+        string caminho = "estoque.json";
 
+        if (!File.Exists(caminho))
+        {
+            Console.WriteLine("Arquivo estoque.json não encontrado!");
+            return;
+        }
+
+        // Lê JSON do arquivo
+        string json = File.ReadAllText(caminho);
         DadosEstoque dados = JsonSerializer.Deserialize<DadosEstoque>(json);
 
         List<Movimentacao> movimentacoes = new List<Movimentacao>();
@@ -66,7 +45,7 @@ class Program
         while (true)
         {
             Console.WriteLine("\n--- Movimentação de Estoque ---");
-            Console.Write("Informe o código do produto (ou 0 para sair): ");
+            Console.Write("Digite o código do produto (ou 0 para sair): ");
             int codigo = int.Parse(Console.ReadLine());
 
             if (codigo == 0)
@@ -80,7 +59,7 @@ class Program
                 continue;
             }
 
-            Console.WriteLine($"Produto: {produto.descricaoProduto}");
+            Console.WriteLine($"\nProduto: {produto.descricaoProduto}");
             Console.WriteLine($"Estoque atual: {produto.estoque}");
 
             Console.Write("Digite 'E' para Entrada ou 'S' para Saída: ");
@@ -91,17 +70,17 @@ class Program
 
             if (tipo == "S" && quantidade > produto.estoque)
             {
-                Console.WriteLine("Não há estoque suficiente para essa saída!");
+                Console.WriteLine("Erro: Estoque insuficiente!");
                 continue;
             }
 
-            // Registrar movimentação
+            // Cria movimentação
             Movimentacao mov = new Movimentacao()
             {
                 Id = Guid.NewGuid(),
                 CodigoProduto = codigo,
-                Quantidade = quantidade * (tipo == "S" ? -1 : 1),
                 Descricao = tipo == "E" ? "Entrada de Mercadoria" : "Saída de Mercadoria",
+                Quantidade = tipo == "E" ? quantidade : -quantidade,
                 Data = DateTime.Now
             };
 
@@ -110,7 +89,7 @@ class Program
             // Atualiza estoque
             produto.estoque += mov.Quantidade;
 
-            Console.WriteLine("\nMovimentação registrada com sucesso!");
+            Console.WriteLine("\nMovimentação registrada!");
             Console.WriteLine($"ID: {mov.Id}");
             Console.WriteLine($"Descrição: {mov.Descricao}");
             Console.WriteLine($"Quantidade movimentada: {mov.Quantidade}");
