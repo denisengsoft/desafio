@@ -1,5 +1,7 @@
 Rodando o código, a saída de cada desafio será:  
 
+NOTA: Os arquivos vendas.json e estoque.json devem estar na mesma pasta onde o desafio1.cs e desafio 2.cs forem salvos.
+
 ----- Desafio 1  
 
 João Silva: R$714.18  
